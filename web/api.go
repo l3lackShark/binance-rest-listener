@@ -5,12 +5,13 @@ import (
 	"net/http"
 )
 
-func apiHandler(w http.ResponseWriter, r *http.Request) {
+func currentPriceHandler(w http.ResponseWriter, r *http.Request) {
+
 	fmt.Fprint(w, "Hello api\n")
 }
 
 func StartServer(addr string) {
-	http.HandleFunc("/api", apiHandler)
+	http.HandleFunc("/api", currentPriceHandler)
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		panic(err)
 	}
