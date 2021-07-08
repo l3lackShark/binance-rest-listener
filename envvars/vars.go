@@ -8,7 +8,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const projectDirName = "binance-ws-listener"
+const projectDirName = "binance-rest-listener"
 
 // LoadEnv loads env vars from .env (https://github.com/joho/godotenv/issues/43#issuecomment-503183127)
 func LoadEnv() {

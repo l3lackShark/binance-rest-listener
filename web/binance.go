@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/l3lackShark/binance-ws-listener/database"
+	"github.com/l3lackShark/binance-rest-listener/database"
 )
 
 //Was originally planning on using websockets, but decided to send GET requests for simplicity. Seems like they already have an endpoint for the avgPrice of the last 5 mins (/api/v3/avgPrice)
@@ -42,7 +42,7 @@ func RequestFiveMinAVG() (AVGRespone, error) {
 //Fatals are not handled, so if an error occurs, the application will exit.
 
 func PriceLoop() {
-	ticker := time.NewTicker(time.Second * 15)
+	ticker := time.NewTicker(time.Minute * 5)
 	//establish a database connection
 
 	repo, err := database.New(os.Getenv("MONGO_CONN_URL"))
@@ -56,12 +56,12 @@ func PriceLoop() {
 			log.Fatalln(err)
 		}
 		ins := database.Document{
-			Date:  time.Now().UTC().Format("2.1.2006"), //DD.MM.YYYY
+			Date:  time.Now().UTC().Format("02.01.2006"), //DD.MM.YYYY
 			Price: resp.Price,
 			Time:  time.Now().UTC().Format("15:04"), //HH:MM
 		}
 
-		err = repo.UpdateOrInsertOne(ins, database.DaatabaseName, database.CollectionName)
+		err = repo.UpdateOrInsertOne(database.DaatabaseName, database.CollectionName, ins)
 		if err != nil {
 			log.Fatalln(err)
 		}

@@ -3,7 +3,7 @@ package web_test
 import (
 	"testing"
 
-	"github.com/l3lackShark/binance-ws-listener/web"
+	"github.com/l3lackShark/binance-rest-listener/web"
 	"github.com/stretchr/testify/assert"
 )
 

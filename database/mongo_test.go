@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/l3lackShark/binance-ws-listener/database"
-	"github.com/l3lackShark/binance-ws-listener/envvars"
+	"github.com/l3lackShark/binance-rest-listener/database"
+	"github.com/l3lackShark/binance-rest-listener/envvars"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -52,17 +52,16 @@ func TestDatabase(t *testing.T) {
 
 	for i, test := range testCases {
 		t.Logf("Calling UpdateOrInsertOne(), case: %d", i)
-		err := db.UpdateOrInsertOne(test, database.TestDatabaseName, database.CollectionName)
+		err := db.UpdateOrInsertOne(database.TestDatabaseName, database.CollectionName, test)
 		ok := assert.NoError(t, err, fmt.Sprintf("Failed to pass test case suite on UpdateOrInsertOne(): %e", err))
 		if !ok {
 			return
 		}
+
+		_, err = db.FindOneByDate(database.TestDatabaseName, database.CollectionName, test.Date)
+		ok = assert.NoError(t, err, fmt.Sprintf("Failed FindOneByDate(): %e", err))
+		if !ok {
+			return
+		}
 	}
-	//test new doc
-
-	// 	tests := []struct {
-	// 	}{}
-
-	// 	db.UpdateOrInsertOne(nil, database.TestDatabaseName, database.TestCollectionName)
-	//
 }

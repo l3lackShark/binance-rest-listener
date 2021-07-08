@@ -1,23 +1,24 @@
 package main
 
 import (
-	"flag"
+	"os"
 
-	"github.com/l3lackShark/binance-ws-listener/envvars"
-	"github.com/l3lackShark/binance-ws-listener/web"
+	"github.com/l3lackShark/binance-rest-listener/envvars"
+	"github.com/l3lackShark/binance-rest-listener/web"
 )
 
 var (
-	ServerAddr = flag.String("serverip", "localhost:24080", "http service address")
+	ServerAddr string = "localhost:24080"
 )
 
 func init() {
 	envvars.LoadEnv()
-	flag.Parse()
+	if os.Getenv("SERVER_IP") != "" {
+		ServerAddr = os.Getenv("SERVER_IP")
+	}
 }
 
 func main() {
 	go web.PriceLoop()
-	web.StartServer(*ServerAddr)
-
+	web.StartServer(ServerAddr)
 }

@@ -13,14 +13,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-//This repository implementation is not really reliable if the user wants to use multiple drivers (postgresql/etc) Made for simplicity
+//This repository implementation is not really reliable if the user wants to use multiple drivers (postgresql/etc) or have different types of structs moving around. Made for simplicity
 
 type (
 	MongoString string //to prevent accidental string input, those should be pre defined or explicitly typecasted.
 
 	Repository interface {
-		UpdateOrInsertOne(data Document, database MongoString, collecton MongoString) error
+		UpdateOrInsertOne(database MongoString, collecton MongoString, input Document) error
 		RemoveAllDocumentsInCollection(database MongoString, collecton MongoString) error
+		FindOneByDate(database MongoString, collecton MongoString, date string) (MongoDocument, error)
 	}
 
 	database struct { //internal struct
@@ -30,12 +31,11 @@ type (
 )
 
 var (
-	DaatabaseName      MongoString    = "blockchain"
-	CollectionName     MongoString    = "binance"
-	TestDatabaseName   MongoString    = "test_blockchain"
-	TestCollectionName MongoString    = "test_binance"
-	dateFormat         *regexp.Regexp = regexp.MustCompile(`\d{1,2}.\d{1,2}.\d{4}`)
-	ctx                               = context.TODO() //should replace with a proper context at some point
+	DaatabaseName    MongoString    = "blockchain"
+	CollectionName   MongoString    = "binance"
+	TestDatabaseName MongoString    = "test_blockchain"
+	DateFormat       *regexp.Regexp = regexp.MustCompile(`\d{1,2}.\d{1,2}.\d{4}`) //DD.MM.YYYY
+	ctx                             = context.TODO()                              //should replace with a proper context at some point
 )
 
 //New Initializes mongodb connection and returns a `Repository` interface
@@ -61,6 +61,7 @@ func New(connURL string) (Repository, error) {
 	}, nil
 }
 
+//RemoveAllDocumentsInCollection deletes all documents in a given collection, used for tests
 func (db *database) RemoveAllDocumentsInCollection(database MongoString, collecton MongoString) error {
 	collection := db.client.Database(string(database)).Collection(string(collecton))
 	opts := options.Delete()
@@ -72,10 +73,10 @@ func (db *database) RemoveAllDocumentsInCollection(database MongoString, collect
 }
 
 //UpdateOrInsertOne inserts or updates a bson-complaint object into the database
-func (db *database) UpdateOrInsertOne(input Document, database MongoString, collecton MongoString) error {
+func (db *database) UpdateOrInsertOne(database MongoString, collecton MongoString, input Document) error {
 	//check the date
 
-	if !dateFormat.MatchString(input.Date) {
+	if !DateFormat.MatchString(input.Date) {
 		return fmt.Errorf("Unexpected date format, GOT: %s", input.Date)
 	}
 
@@ -134,4 +135,30 @@ func (db *database) UpdateOrInsertOne(input Document, database MongoString, coll
 	}
 
 	return nil
+}
+
+//FindOneByDate retrieves a document by given date (format: DD.MM.YYYY)
+func (db *database) FindOneByDate(database MongoString, collecton MongoString, date string) (MongoDocument, error) {
+	collection := db.client.Database(string(database)).Collection(string(collecton))
+	opts := options.FindOne()
+	filter := bson.D{primitive.E{
+		Key: "date",
+		Value: bson.D{primitive.E{
+			Key:   "$in",
+			Value: bson.A{date},
+		}}}}
+	res := collection.FindOne(db.ctx, filter, opts)
+	if res.Err() != nil {
+		if res.Err().Error() == "mongo: no documents in result" {
+			return MongoDocument{}, fmt.Errorf("Failed to find the document with desired date")
+		}
+		return MongoDocument{}, fmt.Errorf("Unexpected error on finding the document: %e", res.Err())
+	}
+	out := MongoDocument{}
+
+	if err := res.Decode(&out); err != nil {
+		return MongoDocument{}, fmt.Errorf("Failed to decode document: %e", err)
+	}
+
+	return out, nil
 }
