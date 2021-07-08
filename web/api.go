@@ -2,6 +2,7 @@ package web
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -13,7 +14,7 @@ func currentPriceHandler(w http.ResponseWriter, r *http.Request) {
 func StartServer(addr string) {
 	http.HandleFunc("/api", currentPriceHandler)
 	if err := http.ListenAndServe(addr, nil); err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 }
