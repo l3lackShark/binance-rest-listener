@@ -11,6 +11,7 @@ Tokens:
 # API
 
 *Available Endpoints:* 
+
 **Get Average BTC price with a five minute interval for a given date.**
 * Request type: GET\
 `/api/getDay?date=DD.MM.YYYY`
