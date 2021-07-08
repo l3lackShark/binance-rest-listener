@@ -35,7 +35,10 @@ func RequestFiveMinAVG() (AVGRespone, error) {
 		return AVGRespone{}, fmt.Errorf("Failed to send buffer to bytes: %e", err)
 	}
 
-	json.Unmarshal(bytes.Bytes(), &out)
+	if err := json.Unmarshal(bytes.Bytes(), &out); err != nil {
+		return AVGRespone{}, fmt.Errorf("Failed to Unmarshall JSON: %e", err)
+	}
+
 	return out, nil
 }
 
