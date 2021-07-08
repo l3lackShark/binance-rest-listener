@@ -52,7 +52,7 @@ Example of error:
 
 **Get Current Average BTC price in the last five minutes.**
 * Request type: GET\
-`/api/getCurrent
+`/api/getCurrent`
 
 **Response**
 - A JSON object that either contains data or a single error.
