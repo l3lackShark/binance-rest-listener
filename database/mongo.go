@@ -52,7 +52,7 @@ func New(connURL string) (Repository, error) {
 	// Check the connection
 	err = dbClient.Ping(connctx, nil)
 	if err != nil {
-		log.Fatal(err)
+		return &database{}, fmt.Errorf("failed to ping mongodb: %e", err)
 	}
 
 	log.Println("Connected to mongodb database") //TODO: replace with custom logger
